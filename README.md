@@ -55,3 +55,4 @@ docs/                 ТЗ, методологія, ідентифікатори
 Див. [docs/AI_LOG.md](docs/AI_LOG.md) і `docs/AI_contribution.xlsx`.
 
 Автор: Подзивалов Руслан Олександрович, ІПЗ, Ужгородський університет, 2026.
+# lab-class-room
