@@ -1,0 +1,25 @@
+sequenceDiagram
+  actor U as Користувач
+  participant APP as app.js
+  participant RAF as requestAnimationFrame
+  participant SC as scale.js
+  participant PL as chart.js
+  U->>APP: «▶ Анімувати» (режим «Усі»)
+  APP->>APP: queue = [фаза Лагранжа, фаза МНК]
+  APP->>RAF: requestDraw()
+  loop фаза Лагранжа: t від 0 до n − 1
+    RAF->>APP: frame(ts)
+    APP->>APP: k = ⌊t⌋, s = smoothstep(t − k)
+    APP->>APP: крива = (1 − s)·Pₖ + s·Pₖ₊₁ на [x₀, xₖ + s(xₖ₊₁ − xₖ)]
+    APP->>SC: computeBounds → approach
+    APP->>PL: крива, вузли (додані / порожні), активний вузол k + 1
+  end
+  APP->>APP: наступна фаза з черги
+  loop фаза МНК: t від 0 до 2.2
+    RAF->>APP: frame(ts)
+    APP->>APP: g = smoothstep(t): (1 − g)·ȳ + g·g(x)
+    APP->>APP: частки залишків fᵢ = smoothstep((t − 1)·n − i)
+    APP->>SC: computeBounds → approach
+    APP->>PL: МНК-крива, відрізки залишків, стовпці на діаграмі залишків
+  end
+  APP-->>U: «Готово», підказки при наведенні

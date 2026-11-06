@@ -1,0 +1,31 @@
+flowchart LR
+  subgraph Browser["Браузер (index.html + css/style.css)"]
+    UI["Панель керування<br/>(набір, режим, m, анімація, форма)"]
+    CV["Canvas: основний графік,<br/>діаграма залишків, 6 мініграфіків"]
+    TT["Підказка (tooltip)"]
+  end
+  subgraph Logic["JavaScript-модулі"]
+    APP["app.js<br/>контролер, стан, анімація"]
+    AP["approx.js<br/>Лагранж, Ньютон, МНК (QR), метрики"]
+    SC["scale.js<br/>автомасштаб, поділки"]
+    CH["chart.js<br/>клас Plot (рендерер)"]
+    DS["datasets.js<br/>набори 5 / 10 / 20"]
+  end
+  subgraph Dev["Розробка та перевірка (Node.js)"]
+    T["tests/*.test.js<br/>node:test + Playwright"]
+    BM["scripts/benchmark.js<br/>аналітичне тестування"]
+    SS["scripts/screenshots.js"]
+  end
+  UI -- події --> APP
+  APP -- дані --> DS
+  APP -- обчислення --> AP
+  APP -- межі осей --> SC
+  APP -- команди малювання --> CH
+  CH -- пікселі --> CV
+  APP --> TT
+  CH --> SC
+  T --> AP
+  T --> SC
+  T -. браузер .-> APP
+  BM --> AP
+  SS -. браузер .-> APP

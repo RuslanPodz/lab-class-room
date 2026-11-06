@@ -1,0 +1,23 @@
+sequenceDiagram
+  actor U as Користувач
+  participant UI as index.html (кнопки, форма)
+  participant APP as app.js (контролер)
+  participant AP as approx.js (обчислення)
+  participant SC as scale.js (автомасштаб)
+  participant PL as chart.js (Plot)
+  U->>UI: натискає «20» (або клавішу 3)
+  UI->>APP: click → setDataset(20)
+  APP->>APP: stopAnimation(), state.n = 20
+  APP->>AP: makeLagrange(x, y), dividedDifferences(x, y)
+  APP->>AP: leastSquares(x, y, m, {normalize})
+  AP-->>APP: fn, θ, ŷ, r, метрики, cond₂
+  APP->>UI: renderInfo(): формули, метрики, таблиці, 6 мініграфіків
+  APP->>APP: requestDraw()
+  loop кожен кадр, доки межі не стабілізуються
+    APP->>SC: computeBounds(точки, видимі криві)
+    SC-->>APP: target {xMin, xMax, yMin, yMax}
+    APP->>SC: approach(bounds, target, k)
+    APP->>PL: clear, drawAxes, drawCurve, drawResidualSegments, drawPoints
+    APP->>PL: drawResidualBars (діаграма залишків)
+  end
+  PL-->>U: оновлений графік у видимій зоні
