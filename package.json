@@ -1,0 +1,14 @@
+{
+  "name": "lab1-approximation",
+  "version": "1.0.0",
+  "description": "ЛР1: апроксимація функцій інтерполяцією Лагранжа/Ньютона та МНК (QR Хаусхолдера) з анімацією і автомасштабуванням осей",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "bench": "node scripts/benchmark.js",
+    "datasets": "node scripts/gen-datasets.js"
+  },
+  "engines": { "node": ">=18" },
+  "author": "Подзивалов Руслан Олександрович",
+  "license": "MIT"
+}
