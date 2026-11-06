@@ -1,0 +1,159 @@
+/* Кольорові токени: світла тема + темна (за системним налаштуванням або data-theme) */
+:root {
+  color-scheme: light;
+  --surface-0: #f3f2ef;
+  --surface-1: #fcfcfb;
+  --border: #dcdad3;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #8a8984;
+  --grid: #ebe9e4;
+  --axis: #9c9a93;
+  --extrap: rgba(120, 118, 110, 0.10);
+  --series-lagrange: #2a78d6;
+  --series-mnk: #eb6834;
+  --series-residual: #6250d6;
+  --active: #e34948;
+  --accent: #2a78d6;
+  --error: #b42318;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #111110;
+    --surface-1: #1a1a19;
+    --border: #3a3936;
+    --text-primary: #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --grid: #2a2a28;
+    --axis: #6d6c66;
+    --extrap: rgba(200, 198, 190, 0.08);
+    --series-lagrange: #3987e5;
+    --series-mnk: #d95926;
+    --series-residual: #9085e9;
+    --active: #e66767;
+    --accent: #3987e5;
+    --error: #f97066;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #111110; --surface-1: #1a1a19; --border: #3a3936;
+  --text-primary: #f0efec; --text-secondary: #c3c2b7; --text-muted: #8f8e86;
+  --grid: #2a2a28; --axis: #6d6c66; --extrap: rgba(200, 198, 190, 0.08);
+  --series-lagrange: #3987e5; --series-mnk: #d95926; --series-residual: #9085e9;
+  --active: #e66767; --accent: #3987e5; --error: #f97066;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+h1 { font-size: 1.35rem; margin: 0; }
+h2 { font-size: 1.1rem; margin: 0 0 .5rem; }
+h3 { font-size: .95rem; margin: .9rem 0 .4rem; color: var(--text-secondary); }
+.sub { margin: .25rem 0 0; color: var(--text-secondary); }
+.hint { color: var(--text-muted); font-size: .85rem; margin: .3rem 0; }
+.error { color: var(--error); min-height: 1.2em; font-size: .9rem; margin: .3rem 0; }
+
+.top, main, .foot { max-width: 1280px; margin: 0 auto; padding: 16px; }
+.top { padding-bottom: 4px; }
+.foot { color: var(--text-muted); font-size: .85rem; }
+
+/* ---- панель керування */
+.controls {
+  display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center;
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+}
+.group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.label { color: var(--text-secondary); font-size: .85rem; }
+.checks label { font-size: .9rem; display: inline-flex; gap: 5px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; border-right: 1px solid var(--border); }
+.seg button:last-child { border-right: 0; }
+button, select {
+  font: inherit; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { background: var(--grid); }
+button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface-1); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary:hover { filter: brightness(1.08); }
+button:focus-visible, select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+input[type="range"] { width: 110px; }
+
+/* ---- основний графік */
+.chart-card, .card {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px; margin-top: 14px;
+}
+.chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; align-items: baseline; }
+.legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; font-size: .88rem; color: var(--text-secondary); }
+.legend li { display: inline-flex; align-items: center; gap: 6px; }
+.mk { display: inline-block; flex: none; }
+.mk.pt { width: 10px; height: 10px; border-radius: 50%; background: var(--text-primary); }
+.mk.act { width: 12px; height: 12px; border-radius: 50%; background: var(--active); }
+.mk.line { width: 22px; height: 0; border-top: 3px solid; border-radius: 2px; }
+.mk.lag { border-color: var(--series-lagrange); }
+.mk.mnk { border-color: var(--series-mnk); }
+.mk.res { border-color: var(--series-residual); }
+.mk.dashed { border-top-style: dashed; border-top-width: 2px; }
+body[data-mode="lagrange"] .lg-mnk, body[data-mode="mnk"] .lg-lag { display: none; }
+
+.canvas-wrap { position: relative; margin-top: 8px; }
+#mainChart { width: 100%; height: clamp(300px, 52vh, 520px); display: block; border-radius: 6px; }
+#residualChart { width: 100%; height: 170px; display: block; }
+.meta { color: var(--text-muted); font-size: .8rem; margin: 6px 0 0; font-variant-numeric: tabular-nums; }
+.status { margin: 4px 0 0; font-size: .9rem; color: var(--text-secondary); }
+.tooltip {
+  position: absolute; pointer-events: none; z-index: 2;
+  background: var(--surface-1); color: var(--text-primary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 10px; font-size: .85rem; line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .15); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.sw { display: inline-block; width: 10px; height: 3px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+.sw.lag { background: var(--series-lagrange); }
+.sw.mnk { background: var(--series-mnk); }
+.sw.res { background: var(--series-residual); }
+
+/* ---- панелі */
+.panels { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 1100px) { .panels { grid-template-columns: minmax(0, 1fr); } }
+.panels .card { margin-top: 14px; }
+.formula { display: flex; gap: 8px; align-items: center; margin: .3rem 0; }
+.formula code { font-size: .85rem; overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; }
+.table-wrap.tall { max-height: 420px; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .85rem; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--grid); padding: 5px 8px; text-align: right; white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 600; background: var(--surface-1); position: sticky; top: 0; }
+table.metrics th[scope="row"] { text-align: left; font-weight: 400; position: static; }
+td.diag { background: color-mix(in srgb, var(--series-lagrange) 14%, transparent); font-weight: 600; }
+textarea {
+  width: 100%; font: 13px/1.4 ui-monospace, Consolas, monospace; color: var(--text-primary);
+  background: var(--surface-0); border: 1px solid var(--border); border-radius: 8px; padding: 8px; resize: vertical;
+}
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+details.dd summary { cursor: pointer; font-weight: 600; }
+
+/* ---- 6 мініграфіків */
+.mini { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mini figure {
+  margin: 0; border: 1px solid var(--border); border-radius: 8px; padding: 8px; cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px; transition: border-color .15s;
+}
+.mini figure:hover { border-color: var(--text-muted); }
+.mini figure.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.mini figcaption { font-weight: 600; font-size: .9rem; }
+.mini canvas { width: 100%; height: 170px; display: block; }
+.mini small { color: var(--text-secondary); font-size: .78rem; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 760px) {
+  .mini { grid-template-columns: minmax(0, 1fr); }
+  .controls { gap: 10px 14px; }
+  h1 { font-size: 1.15rem; }
+}

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Апроксимація: Лагранж і МНК</title>
+  <meta name="description" content="ЛР № 1: інтерполяційний поліном Лагранжа (Ньютона) та МНК-апроксимація з анімацією та автоматичним масштабуванням осей">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-mode="all">
+  <header class="top">
+    <div>
+      <h1>Апроксимація функцій: інтерполяція Лагранжа та МНК</h1>
+      <p class="sub">Лабораторна робота № 1 · варіант: (0; 0.0), (1; 0.5), (2; 0.8), (3; 0.5), (4; 0.0)</p>
+    </div>
+  </header>
+
+  <main>
+    <!-- Панель керування: усі фільтри в одному рядку над графіком -->
+    <section class="controls" aria-label="Керування">
+      <div class="group">
+        <span class="label">Набір точок</span>
+        <div class="seg" role="group" aria-label="Набір точок">
+          <button type="button" data-n="5" aria-pressed="true" title="Клавіша 1">5</button>
+          <button type="button" data-n="10" aria-pressed="false" title="Клавіша 2">10</button>
+          <button type="button" data-n="20" aria-pressed="false" title="Клавіша 3">20</button>
+        </div>
+      </div>
+      <div class="group">
+        <span class="label">Режим</span>
+        <div class="seg" role="group" aria-label="Режим відображення">
+          <button type="button" data-mode="lagrange" aria-pressed="false">Інтерполяція</button>
+          <button type="button" data-mode="mnk" aria-pressed="false">МНК</button>
+          <button type="button" data-mode="all" aria-pressed="true">Усі</button>
+        </div>
+      </div>
+      <div class="group">
+        <label class="label" for="degree">Степінь МНК m</label>
+        <select id="degree">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+        <span id="mInfo" class="hint"></span>
+      </div>
+      <div class="group checks">
+        <label><input type="checkbox" id="normalize" checked> нормалізація x</label>
+        <label><input type="checkbox" id="extrap"> екстраполяція ±25%</label>
+        <label><input type="checkbox" id="showRef"> еталонна форма</label>
+      </div>
+      <div class="group anim">
+        <button type="button" id="playBtn" class="primary" aria-pressed="false">▶ Анімувати</button>
+        <button type="button" id="resetBtn">⏭ Кінцевий стан</button>
+        <label class="label" for="speed">Швидкість</label>
+        <input type="range" id="speed" min="0.25" max="3" step="0.25" value="1">
+        <output id="speedOut">1×</output>
+      </div>
+    </section>
+
+    <section class="chart-card" aria-label="Графік апроксимації">
+      <div class="chart-head">
+        <h2 id="datasetTitle">5 точок (варіант)</h2>
+        <ul class="legend" aria-label="Легенда">
+          <li><span class="mk pt"></span>експериментальні точки</li>
+          <li class="lg-lag"><span class="mk line lag"></span>інтерполяція Лагранжа</li>
+          <li class="lg-mnk"><span class="mk line mnk"></span>МНК-поліном</li>
+          <li class="lg-mnk"><span class="mk line res dashed"></span>залишки rᵢ</li>
+          <li><span class="mk act"></span>активний вузол</li>
+        </ul>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="mainChart" role="img" aria-label="Експериментальні точки, крива інтерполяції Лагранжа і крива МНК"></canvas>
+        <div id="tooltip" class="tooltip" hidden></div>
+      </div>
+      <p class="meta"><span id="scaleInfo"></span> · <span id="perfInfo"></span></p>
+      <p id="status" class="status" role="status">Готово.</p>
+
+      <div id="residualWrap">
+        <h3>Діаграма залишків rᵢ = yᵢ − ŷᵢ (МНК)</h3>
+        <canvas id="residualChart" role="img" aria-label="Штрих-діаграма залишків МНК"></canvas>
+      </div>
+    </section>
+
+    <section class="panels">
+      <article class="card">
+        <h3>Отримані поліноми</h3>
+        <p class="formula lg-lag"><span class="mk line lag"></span><code id="lagFormula"></code></p>
+        <p class="formula lg-mnk"><span class="mk line mnk"></span><code id="mnkFormula"></code></p>
+        <h3>Метрики якості</h3>
+        <div class="table-wrap">
+          <table class="metrics">
+            <thead><tr><th>Показник</th><th>Лагранж</th><th>МНК</th></tr></thead>
+            <tbody id="metricsBody"></tbody>
+          </table>
+        </div>
+        <p class="hint">g_ref — базова форма варіанта 0.8 − (x−2)²/3 + (x−2)⁴/30; cond₂(A) — число обумовленості дизайн-матриці.</p>
+      </article>
+
+      <article class="card">
+        <h3>Вузли, значення та залишки</h3>
+        <div class="table-wrap tall">
+          <table>
+            <thead><tr><th>i</th><th>xᵢ</th><th>yᵢ</th><th>p(xᵢ)</th><th>ŷᵢ (МНК)</th><th>rᵢ</th></tr></thead>
+            <tbody id="pointsBody"></tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="card">
+        <h3>Введення даних</h3>
+        <p class="hint">Формат: «(x, y), (x, y), …» або по рядку «x y». Дані замінюють поточний слот (5/10/20).</p>
+        <textarea id="dataEditor" rows="9" spellcheck="false" aria-label="Точки набору"></textarea>
+        <p id="dataError" class="error" role="alert"></p>
+        <div class="row">
+          <button type="button" id="applyData" class="primary">Застосувати</button>
+          <button type="button" id="resetData">Повернути вихідний набір</button>
+        </div>
+      </article>
+    </section>
+
+    <details class="card dd">
+      <summary>Таблиця поділених різниць (форма Ньютона)</summary>
+      <p class="hint">Коефіцієнти полінома Ньютона aₖ = f[x₀,…,xₖ] — перший рядок таблиці (виділено).</p>
+      <div class="table-wrap">
+        <table>
+          <thead id="ddHead"></thead>
+          <tbody id="ddBody"></tbody>
+        </table>
+      </div>
+    </details>
+
+    <section class="card">
+      <h2>Порівняння: 6 графіків (3 — Лагранж, 3 — МНК)</h2>
+      <p class="hint">Кожен графік масштабується автоматично. Клацніть графік, щоб відкрити його вгорі.</p>
+      <div class="mini">
+        <figure data-kind="lagrange" data-n="5"><figcaption>Лагранж · 5 точок</figcaption><canvas id="mini-lagrange-5"></canvas><small id="mini-lagrange-5-cap"></small></figure>
+        <figure data-kind="lagrange" data-n="10"><figcaption>Лагранж · 10 точок</figcaption><canvas id="mini-lagrange-10"></canvas><small id="mini-lagrange-10-cap"></small></figure>
+        <figure data-kind="lagrange" data-n="20"><figcaption>Лагранж · 20 точок</figcaption><canvas id="mini-lagrange-20"></canvas><small id="mini-lagrange-20-cap"></small></figure>
+        <figure data-kind="mnk" data-n="5"><figcaption>МНК · 5 точок</figcaption><canvas id="mini-mnk-5"></canvas><small id="mini-mnk-5-cap"></small></figure>
+        <figure data-kind="mnk" data-n="10"><figcaption>МНК · 10 точок</figcaption><canvas id="mini-mnk-10"></canvas><small id="mini-mnk-10-cap"></small></figure>
+        <figure data-kind="mnk" data-n="20"><figcaption>МНК · 20 точок</figcaption><canvas id="mini-mnk-20"></canvas><small id="mini-mnk-20-cap"></small></figure>
+      </div>
+      <h3>Порівняльний аналіз для різної кількості точок</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th rowspan="2">n</th><th colspan="3">Лагранж</th><th colspan="5">МНК</th></tr>
+            <tr><th>степінь</th><th>max|p − g_ref|</th><th>розмах</th><th>m</th><th>RMSE</th><th>R²</th><th>max|g − g_ref|</th><th>cond₂(A)</th></tr>
+          </thead>
+          <tbody id="compareBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">Подзивалов Р. О. · ІПЗ · 2026 · JavaScript, Canvas 2D, без зовнішніх бібліотек</footer>
+
+  <!-- Класичні скрипти (не модулі), щоб сторінка працювала і при відкритті файлом -->
+  <script src="js/datasets.js"></script>
+  <script src="js/approx.js"></script>
+  <script src="js/scale.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
